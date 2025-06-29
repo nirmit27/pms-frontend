@@ -15,18 +15,18 @@ export default function Home() {
           view, search, add, or update patient records.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <a
-            href="/view-all"
+          <Link
+            to="/view-all"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
           >
             View All Patients
-          </a>
-          <a
-            href="/add"
+          </Link>
+          <Link
+            to="/add"
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
           >
             Add Patient
-          </a>
+          </Link>
         </div>
       </div>
     </div>
