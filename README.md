@@ -2,4 +2,6 @@
 
 This is the **frontend** of the web application.
 
-> ⚠️ Under Construction ⚠️
+> 🏗️ Under Construction
+
+---
