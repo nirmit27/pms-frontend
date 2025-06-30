@@ -6,9 +6,7 @@ import Footer from "./components/Footer";
 
 // Pages
 import Home from "./pages/Home";
-import ViewAll from "./pages/Patient/ViewAll";
-import SearchByID from "./pages/Patient/SearchByID";
-import SearchByName from "./pages/Patient/SearchByName";
+import Records from "./pages/Patient/Records";
 import AddPatient from "./pages/Patient/AddPatient";
 import UpdatePatient from "./pages/Patient/UpdatePatient";
 
@@ -22,9 +20,12 @@ export default function App() {
         <main className="flex-1 container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
+            {/*
             <Route path="/view-all" element={<ViewAll />} />
             <Route path="/search-id" element={<SearchByID />} />
             <Route path="/search-name" element={<SearchByName />} />
+            */}
+            <Route path="/records" element={<Records />} />
             <Route path="/add" element={<AddPatient />} />
             <Route path="/update" element={<UpdatePatient />} />
           </Routes>

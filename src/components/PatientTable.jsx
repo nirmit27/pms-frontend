@@ -11,7 +11,7 @@ export default function PatientTable({ data }) {
   const keys = Object.keys(data[0]);
 
   return (
-    <div className="overflow-x-auto rounded-lg shadow border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-md shadow border border-gray-200 bg-white">
       <table className="min-w-full table-auto">
         <thead>
           <tr className="bg-blue-50">
