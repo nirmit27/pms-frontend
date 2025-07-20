@@ -69,8 +69,8 @@ export default function Records() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl bg-white shadow-sm rounded-md">
+    <div className="min-h-[60vh] bg-gray-50">
+      <div className="mx-auto max-w-5xl bg-white shadow-sm rounded-md">
         <div className="px-4 py-6">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-700">
@@ -83,13 +83,15 @@ export default function Records() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Search by ID */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Hash className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold">Search by Patient ID</h2>
+              <Hash className="w-5 h-5 text-slate-400" />
+              <h2 className="text-lg text-gray-600 font-semibold">
+                Search by Patient ID
+              </h2>
             </div>
 
             <div className="space-y-4">
@@ -98,13 +100,13 @@ export default function Records() {
                   type="text"
                   value={pid}
                   onChange={(e) => setPid(e.target.value)}
-                  placeholder="Enter Patient ID (e.g., P001)"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Enter Patient ID"
+                  className="flex-1 px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent text-sm transition-all duration-200"
                 />
                 <button
                   onClick={fetchPatient}
                   disabled={loadingID}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm focus:outline-none transition-colors duration-200 cursor-pointer"
                 >
                   {loadingID ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -183,10 +185,12 @@ export default function Records() {
           </div>
 
           {/* Search by Name */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5 text-green-600" />
-              <h2 className="text-lg font-semibold">Search by Patient Name</h2>
+              <User className="w-5 h-5 text-slate-400" />
+              <h2 className="text-lg font-semibold text-gray-600">
+                Search by Patient Name
+              </h2>
             </div>
 
             <div className="space-y-4">
@@ -196,12 +200,12 @@ export default function Records() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter Patient Name"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                  className="flex-1 px-3 py-1 border border-gray-300 focus:outline-none rounded-md focus:ring-2 focus:ring-slate-400 focus:border-transparent text-sm transition-all duration-200"
                 />
                 <button
                   onClick={fetchByName}
                   disabled={loadingName}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm focus:outline-none transition-colors duration-200 cursor-pointer"
                 >
                   {loadingName ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -262,10 +266,12 @@ export default function Records() {
           </div>
 
           {/* All Records */}
-          <div className="lg:row-span-2 bg-white rounded-lg shadow-sm border p-6">
+          <div className="lg:row-span-2 col-span-2 bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-purple-600" />
-              <h2 className="text-xl font-semibold">All Patients</h2>
+              <Users className="w-5 h-5 text-slate-400" />
+              <h2 className="text-xl font-semibold text-gray-600">
+                All Patients
+              </h2>
             </div>
 
             {loading ? (

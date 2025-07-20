@@ -5,8 +5,8 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 export const api = axios.create({
-  baseURL: BASE_URL,
-  // baseURL: "http://localhost:8000",
+  // baseURL: BASE_URL,
+  baseURL: "http://localhost:8000",
 });
 
 /* CRUD functions */
@@ -14,7 +14,7 @@ export const api = axios.create({
 // Fetch all patient records
 export const fetchAllRecords = async () => {
   const res = await api.get("/view");
-  return res.data.slice(0, -1);
+  return res.data.slice(0, -1).reverse();
 };
 
 // Fetch patient by ID
