@@ -12,14 +12,14 @@ export const api = axios.create({
 
 // Fetch all patient records
 export const fetchAllRecords = async () => {
-  const res = await api.get("/view");
+  const res = await api.get("/records");
   return res.data.slice(0, -1).reverse();
 };
 
 // Fetch patient by ID
 export const fetchRecordById = async (pid) => {
   if (!pid.trim()) throw new Error("Patient ID is required");
-  const res = await api.get(`/patient/id/${pid}`);
+  const res = await api.get(`/records/id/${pid}`);
   return res.data;
 };
 
@@ -27,6 +27,6 @@ export const fetchRecordById = async (pid) => {
 export const fetchRecordsByName = async (name) => {
   if (!name.trim()) throw new Error("Patient name is required");
 
-  const res = await api.get(`/patients/name?patient_name=${name}`);
+  const res = await api.get(`/records/name?patient_name=${name}`);
   return res.data;
 };
