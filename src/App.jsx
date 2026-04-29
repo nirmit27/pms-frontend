@@ -1,8 +1,7 @@
 import React from "react";
 
 // Components
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Sidebar from "./components/Sidebar";
 
 // Pages
 import Home from "./pages/Home";
@@ -15,22 +14,16 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <main className="flex-1 container mx-auto px-4 py-8">
+      <div className="min-h-screen flex bg-gray-50">
+        <Sidebar />
+        <main className="flex-1 lg:ml-64">
           <Routes>
             <Route path="/" element={<Home />} />
-            {/*
-            <Route path="/view-all" element={<ViewAll />} />
-            <Route path="/search-id" element={<SearchByID />} />
-            <Route path="/search-name" element={<SearchByName />} />
-            */}
             <Route path="/records" element={<Records />} />
             <Route path="/add" element={<AddPatient />} />
             <Route path="/update" element={<UpdatePatient />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </Router>
   );

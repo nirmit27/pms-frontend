@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Hash, User, Users, Search, Loader2, AlertCircle } from "lucide-react";
+import {
+  Hash,
+  User,
+  Users,
+  Search,
+  Loader2,
+  AlertCircle,
+  X,
+} from "lucide-react";
 
 import {
   fetchAllRecords,
@@ -7,6 +15,7 @@ import {
   fetchRecordsByName,
 } from "../../services/api";
 
+import Header from "../../components/Header";
 import Loader from "../../components/ui/Loader";
 import { getBMIColor, formatDate } from "../../utils/helpers";
 
@@ -69,276 +78,313 @@ export default function Records() {
   };
 
   return (
-    <div className="min-h-[60vh] bg-gray-50">
-      <div className="mx-auto max-w-5xl bg-white shadow-sm rounded-md">
-        <div className="px-4 py-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-700">
-              Patient Records
-            </h1>
-          </div>
-          <p className="text-gray-600 mt-2">
-            Look up patient records using the options below.
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Header
+        title="Patient Records"
+      />
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Search by ID */}
-          <div className="bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Hash className="w-5 h-5 text-slate-400" />
-              <h2 className="text-lg text-gray-600 font-semibold">
-                Search by Patient ID
-              </h2>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={pid}
-                  onChange={(e) => setPid(e.target.value)}
-                  placeholder="Enter Patient ID"
-                  className="flex-1 px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent text-sm transition-all duration-200"
-                />
-                <button
-                  onClick={fetchPatient}
-                  disabled={loadingID}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm focus:outline-none transition-colors duration-200 cursor-pointer"
-                >
-                  {loadingID ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
-                  )}
-                  Search
-                </button>
-              </div>
-
-              {result && (
-                <div className="bg-gray-50 p-4 rounded-md">
-                  {result.error ? (
-                    <div className="flex items-center gap-2 text-red-600 text-sm">
-                      <AlertCircle className="w-4 h-4" />
-                      {result.error}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium text-lg">{result.name}</h3>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getBMIColor(
-                            result.verdict
-                          )}`}
-                        >
-                          {result.verdict}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                        <p>
-                          <span className="font-medium">ID:</span> {result.pid}
-                        </p>
-                        <p>
-                          <span className="font-medium">Age:</span> {result.age}
-                        </p>
-                        <p>
-                          <span className="font-medium">Gender:</span>{" "}
-                          {result.gender}
-                        </p>
-                        <p>
-                          <span className="font-medium">City:</span>{" "}
-                          {result.city}
-                        </p>
-                        <p>
-                          <span className="font-medium">Height:</span>{" "}
-                          {result.height}m
-                        </p>
-                        <p>
-                          <span className="font-medium">Weight:</span>{" "}
-                          {result.weight}kg
-                        </p>
-                      </div>
-                      <div className="pt-2 border-t border-gray-200">
-                        <p className="text-sm">
-                          <span className="font-medium">BMI:</span> {result.bmi}
-                        </p>
-                        {result.email && (
-                          <p className="text-sm">
-                            <span className="font-medium">Email:</span>{" "}
-                            {result.email}
-                          </p>
-                        )}
-                        {result.date_of_admission && (
-                          <p className="text-sm">
-                            <span className="font-medium">Admitted:</span>{" "}
-                            {formatDate(result.date_of_admission)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+      <div className="flex-1 p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Search Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Search by ID Card */}
+            <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-blue-500">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Hash className="w-5 h-5 text-blue-500" />
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Search by Name */}
-          <div className="bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-gray-600">
-                Search by Patient Name
-              </h2>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter Patient Name"
-                  className="flex-1 px-3 py-1 border border-gray-300 focus:outline-none rounded-md focus:ring-2 focus:ring-slate-400 focus:border-transparent text-sm transition-all duration-200"
-                />
-                <button
-                  onClick={fetchByName}
-                  disabled={loadingName}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm focus:outline-none transition-colors duration-200 cursor-pointer"
-                >
-                  {loadingName ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
-                  )}
-                  Search
-                </button>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Search by Patient ID
+                </h2>
               </div>
 
-              <div className="max-h-64 overflow-y-auto">
-                {loadingName ? (
-                  <div className="flex justify-center items-center py-8">
-                    <Loader className="w-6 h-6 animate-spin text-green-600" />
-                  </div>
-                ) : (
-                  searched && (
-                    <div className="space-y-2">
-                      {results.length > 0 ? (
-                        results.map((patient) => (
-                          <div
-                            key={patient.pid}
-                            className="bg-gray-50 p-3 rounded-md"
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={pid}
+                    onChange={(e) => setPid(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && fetchPatient()}
+                    placeholder="Enter Patient ID"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                  <button
+                    onClick={fetchPatient}
+                    disabled={loadingID}
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-medium focus:outline-none transition-colors cursor-pointer"
+                  >
+                    {loadingID ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                    Search
+                  </button>
+                </div>
+
+                {result && (
+                  <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                    {result.error ? (
+                      <div className="flex items-center gap-2 text-red-600">
+                        <AlertCircle className="w-5 h-5" />
+                        <span className="font-medium">{result.error}</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-lg text-gray-800">
+                            {result.name}
+                          </h3>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${getBMIColor(
+                              result.verdict,
+                            )}`}
                           >
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-medium text-sm">
-                                {patient.name}
-                              </h3>
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${getBMIColor(
-                                  patient.verdict
-                                )}`}
-                              >
-                                {patient.verdict}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
-                              <p>ID: {patient.pid}</p>
-                              <p>Age: {patient.age}</p>
-                              <p>Gender: {patient.gender}</p>
-                              <p>City: {patient.city}</p>
-                            </div>
-                            <p className="text-xs text-gray-600 mt-1">
-                              BMI: {patient.bmi}
+                            {result.verdict}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">Patient ID</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.pid}
                             </p>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-gray-500 text-sm">
-                          No patients found matching your search.
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">Age</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.age}
+                            </p>
+                          </div>
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">Gender</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.gender}
+                            </p>
+                          </div>
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">City</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.city}
+                            </p>
+                          </div>
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">Height</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.height}m
+                            </p>
+                          </div>
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">Weight</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.weight}kg
+                            </p>
+                          </div>
+                          <div className="bg-white p-3 rounded-md">
+                            <p className="text-gray-500 text-xs">BMI</p>
+                            <p className="font-semibold text-gray-800">
+                              {result.bmi}
+                            </p>
+                          </div>
+                          {result.email && (
+                            <div className="bg-white p-3 rounded-md">
+                              <p className="text-gray-500 text-xs">Email</p>
+                              <p className="font-semibold text-gray-800 truncate">
+                                {result.email}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  )
+
+                        {result.date_of_admission && (
+                          <div className="bg-white p-3 rounded-md border-t pt-4">
+                            <p className="text-gray-500 text-xs">Admitted</p>
+                            <p className="font-semibold text-gray-800">
+                              {formatDate(result.date_of_admission)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Search by Name Card */}
+            <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-green-500">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <User className="w-5 h-5 text-green-500" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Search by Patient Name
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && fetchByName()}
+                    placeholder="Enter Patient Name"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  />
+                  <button
+                    onClick={fetchByName}
+                    disabled={loadingName}
+                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 active:bg-green-700 disabled:opacity-50 flex items-center gap-2 font-medium focus:outline-none transition-colors cursor-pointer"
+                  >
+                    {loadingName ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                    Search
+                  </button>
+                </div>
+
+                {searched && (
+                  <div className="max-h-80 overflow-y-auto">
+                    {loadingName ? (
+                      <div className="flex justify-center items-center py-8">
+                        <Loader className="w-6 h-6 animate-spin text-green-600" />
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {results.length > 0 ? (
+                          results.map((patient) => (
+                            <div
+                              key={patient.pid}
+                              className="bg-gray-50 p-4 rounded-lg border-l-4 border-green-400 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h3 className="font-semibold text-gray-800">
+                                    {patient.name}
+                                  </h3>
+                                  <p className="text-xs text-gray-500">
+                                    {patient.pid}
+                                  </p>
+                                </div>
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-bold ${getBMIColor(
+                                    patient.verdict,
+                                  )}`}
+                                >
+                                  {patient.verdict}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                                <p>Age: {patient.age}</p>
+                                <p>Gender: {patient.gender}</p>
+                                <p>City: {patient.city}</p>
+                                <p>BMI: {patient.bmi}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <p>No records found matching your search.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* All Records */}
-          <div className="lg:row-span-2 col-span-2 bg-white rounded-lg shadow-sm shadow-slate-300 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-slate-400" />
-              <h2 className="text-xl font-semibold text-gray-600">
-                All Patients
-              </h2>
+          {/* All Patients Section */}
+          <div className="bg-white rounded-lg shadow-md border-l-4 border-purple-500 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Users className="w-5 h-5 text-purple-500" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    All Patients
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {patients.length} total records
+                  </p>
+                </div>
+              </div>
             </div>
 
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
               </div>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {patients.map((patient) => (
-                  <div
-                    key={patient.pid}
-                    className="bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors border-l-4 border-purple-400"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium text-lg">{patient.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {patient.pid} • {patient.city}
-                        </p>
+              <div className="space-y-3 max-h-[32rem] overflow-y-auto">
+                {patients.length > 0 ? (
+                  patients.map((patient) => (
+                    <div
+                      key={patient.pid}
+                      className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg hover:shadow-md transition-all border-l-2 border-purple-400 hover:border-purple-600"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-bold text-gray-800">
+                            {patient.name}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            ID: {patient.pid} • {patient.city}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${getBMIColor(
+                            patient.verdict,
+                          )}`}
+                        >
+                          {patient.verdict}
+                        </span>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getBMIColor(
-                          patient.verdict
-                        )}`}
-                      >
-                        {patient.verdict}
-                      </span>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-2">
-                      <p>
-                        <span className="font-medium">Age:</span> {patient.age}
-                      </p>
-                      <p>
-                        <span className="font-medium">Gender:</span>{" "}
-                        {patient.gender}
-                      </p>
-                      <p>
-                        <span className="font-medium">Height:</span>{" "}
-                        {patient.height}m
-                      </p>
-                      <p>
-                        <span className="font-medium">Weight:</span>{" "}
-                        {patient.weight}kg
-                      </p>
-                    </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div className="bg-white p-2 rounded">
+                          <p className="text-gray-500 text-xs">Age</p>
+                          <p className="font-semibold text-gray-800">
+                            {patient.age}
+                          </p>
+                        </div>
+                        <div className="bg-white p-2 rounded">
+                          <p className="text-gray-500 text-xs">Gender</p>
+                          <p className="font-semibold text-gray-800">
+                            {patient.gender}
+                          </p>
+                        </div>
+                        <div className="bg-white p-2 rounded">
+                          <p className="text-gray-500 text-xs">BMI</p>
+                          <p className="font-semibold text-gray-800">
+                            {patient.bmi}
+                          </p>
+                        </div>
+                        <div className="bg-white p-2 rounded">
+                          <p className="text-gray-500 text-xs">Height/Weight</p>
+                          <p className="font-semibold text-gray-800">
+                            {patient.height}m / {patient.weight}kg
+                          </p>
+                        </div>
+                      </div>
 
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                      <p className="text-sm font-medium">BMI: {patient.bmi}</p>
                       {patient.date_of_admission && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">
                           Admitted: {formatDate(patient.date_of_admission)}
                         </p>
                       )}
                     </div>
-
-                    {patient.email && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {patient.email}
-                      </p>
-                    )}
-                  </div>
-                ))}
-
-                {patients.length === 0 && !loading && (
-                  <div className="text-center py-8 text-gray-500">
-                    No patient records found.
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <Users className="w-12 h-12 opacity-30 mx-auto mb-3" />
+                    <p className="font-medium">No patient records found.</p>
                   </div>
                 )}
               </div>

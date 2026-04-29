@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { Plus, Loader2 } from "lucide-react";
 import { api } from "../../services/api";
+import Header from "../../components/Header";
 
 export default function AddPatient() {
   const [formData, setFormData] = useState({});
@@ -32,77 +34,100 @@ export default function AddPatient() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-700 mb-2">
-          Patient Admission
-        </h2>
-        <div className="h-1 bg-slate-300 rounded"></div>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Header
+        title="Admit Patient"
+      />
 
-      <div className="space-y-6">
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">
-            Name
-          </label>
-          <input
-            type="text"
-            value={formData.name || ""}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-            placeholder="Enter Name"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {fields.slice(1).map(({ key, label, type, step }) => (
-            <div key={key} className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                {label}
-              </label>
-              <input
-                type={type}
-                step={step}
-                value={formData[key] || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, [key]: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                placeholder={`Enter ${label}`}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            {loading ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Submitting...</span>
+      <div className="flex-1 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg border-l-4 border-green-500 p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <Plus className="w-6 h-6 text-green-500" />
               </div>
-            ) : (
-              "Admit"
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Patient Admission Form
+                </h2>
+                <p className="text-gray-600 text-sm mt-1">
+                  Fill in the patient details to admit a new patient
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  placeholder="Enter patient name"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {fields.slice(1).map(({ key, label, type, step }) => (
+                  <div key={key}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {label}
+                    </label>
+                    <input
+                      type={type}
+                      step={step}
+                      value={formData[key] || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder={`Enter ${label.toLowerCase()}`}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="flex-1 px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 active:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Admitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      <span>Admit Patient</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {message && (
+              <div
+                className={`mt-6 p-4 rounded-lg font-medium ${
+                  message.includes("success")
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}
+              >
+                {message}
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </div>
-
-      {message && (
-        <div
-          className={`mt-4 p-4 rounded-lg text-center font-medium ${
-            message.includes("success")
-              ? "bg-green-100 text-green-800 border border-green-200"
-              : "bg-red-100 text-red-800 border border-red-200"
-          }`}
-        >
-          {message}
-        </div>
-      )}
     </div>
   );
 }
