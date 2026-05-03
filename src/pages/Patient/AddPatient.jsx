@@ -1,30 +1,45 @@
 import React, { useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
-import { api } from "../../services/api";
+
 import Header from "../../components/Header";
+import { admitPatient } from "../../services/api";
+import { calculateBMI } from "../../utils/helpers";
+import { fields } from "../../constants/constants";
+import { useEffect } from "react";
 
 export default function AddPatient() {
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fields = [
-    { key: "name", label: "Name", type: "text" },
-    { key: "gender", label: "Gender", type: "text" },
-    { key: "age", label: "Age", type: "number" },
-    { key: "city", label: "City", type: "text" },
-    { key: "height", label: "Height (m)", type: "number", step: "0.01" },
-    { key: "weight", label: "Weight (kg)", type: "number", step: "0.1" },
-    { key: "bmi", label: "BMI", type: "number", step: "0.01" },
-  ];
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 20000); // 20 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
+  // Unified handler for all field changes
+  const handleFieldChange = (key, value) => {
+    let updated = { ...formData, [key]: value };
+    // If height or weight changes, recalculate BMI
+    if (key === "height" || key === "weight") {
+      const height = key === "height" ? value : updated.height;
+      const weight = key === "weight" ? value : updated.weight;
+      updated.bmi = calculateBMI(weight, height);
+    }
+    setFormData(updated);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
     try {
-      const res = await api.post("/new-patient", formData);
-      setMessage(res.data.message);
+      const res = await admitPatient(formData);
+      setMessage(res.message);
       setFormData({});
     } catch (e) {
       setMessage(e.response?.data?.detail || "Error adding patient record!");
@@ -35,23 +50,21 @@ export default function AddPatient() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        title="Admit Patient"
-      />
+      <Header title="Admit Patient" />
 
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg border-l-4 border-green-500 p-8">
+          <div className="bg-white rounded-lg shadow-lg border-l-4 border-slate-500 p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Plus className="w-6 h-6 text-green-500" />
+              <div className="p-3 bg-slate-100 rounded-lg">
+                <Plus className="w-6 h-6 text-slate-500" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
                   Patient Admission Form
                 </h2>
                 <p className="text-gray-600 text-sm mt-1">
-                  Fill in the patient details to admit a new patient
+                  Fill in the patient details to admit a new patient.
                 </p>
               </div>
             </div>
@@ -67,28 +80,56 @@ export default function AddPatient() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
                   placeholder="Enter patient name"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fields.slice(1).map(({ key, label, type, step }) => (
+                {fields.map(({ key, label, type, step, options }) => (
                   <div key={key}>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {label}
+                      {label} *
                     </label>
-                    <input
-                      type={type}
-                      step={step}
-                      value={formData[key] || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, [key]: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      placeholder={`Enter ${label.toLowerCase()}`}
-                    />
+                    {type === "select" ? (
+                      <select
+                        value={formData[key] || ""}
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                        required
+                      >
+                        <option value="">Select {label.toLowerCase()}</option>
+                        {options?.map((option) => (
+                          <option key={option} value={option}>
+                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={type}
+                        step={step}
+                        value={formData[key] || ""}
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                        placeholder={
+                          label != "BMI"
+                            ? `Enter ${label.toLowerCase()}`
+                            : "Calculated BMI value..."
+                        }
+                        {...(key === "bmi"
+                          ? {
+                              readOnly: true,
+                              tabIndex: -1,
+                              style: {
+                                background: "#f3f4f6",
+                                cursor: "not-allowed",
+                              },
+                            }
+                          : {})}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -97,7 +138,7 @@ export default function AddPatient() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 active:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  className="flex-1 px-6 py-3 bg-slate-500 text-white font-semibold rounded-lg hover:bg-slate-600 active:bg-slate-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -118,7 +159,7 @@ export default function AddPatient() {
               <div
                 className={`mt-6 p-4 rounded-lg font-medium ${
                   message.includes("success")
-                    ? "bg-green-50 text-green-700 border border-green-200"
+                    ? "bg-slate-50 text-slate-700 border border-slate-200"
                     : "bg-red-50 text-red-700 border border-red-200"
                 }`}
               >

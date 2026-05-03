@@ -1,5 +1,13 @@
 /* Helper functions */
 
+// Helper to calculate BMI
+export function calculateBMI(weight, height) {
+  const w = parseFloat(weight);
+  const h = parseFloat(height);
+  if (!w || !h || h === 0) return "";
+  return (w / (h * h)).toFixed(2);
+}
+
 export function getBMIColor(verdict) {
   switch (verdict) {
     case "Underweight":

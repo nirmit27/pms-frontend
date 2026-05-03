@@ -10,7 +10,7 @@ import {
 
 import Header from "../components/Header";
 import DashboardCard from "../components/DashboardCard";
-import { fetchAllRecords } from "../services/api";
+import { fetchAllRecords, fetchRecentAdmissionsCount } from "../services/api";
 
 export default function Home() {
   const [stats, setStats] = useState({
@@ -20,17 +20,22 @@ export default function Home() {
   });
 
   useEffect(() => {
-    fetchAllRecords()
-      .then((patients) => {
+    const fetchData = async () => {
+      setStats((prev) => ({ ...prev, loading: true }));
+      try {
+        const patients = await fetchAllRecords();
+        const recentAdmissionsCount = await fetchRecentAdmissionsCount();
         setStats({
           totalPatients: patients.length,
-          recentAdmissions: Math.floor(patients.length * 0.3), // Simulated
+          recentAdmissions: recentAdmissionsCount,
           loading: false,
         });
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
         setStats((prev) => ({ ...prev, loading: false }));
-      });
+      }
+    };
+    fetchData();
   }, []);
 
   const dashboardItems = [
@@ -112,9 +117,6 @@ export default function Home() {
                 </div>
                 <Users size={40} className="text-blue-500 opacity-20" />
               </div>
-              <p className="text-xs text-gray-500 mt-4">
-                📈 +{stats.recentAdmissions} this month
-              </p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6 border-t-4 border-slate-500">
@@ -130,7 +132,7 @@ export default function Home() {
                 <Calendar size={40} className="text-slate-500 opacity-20" />
               </div>
               <p className="text-xs text-gray-500 mt-4">
-                ✓ All admission records updated
+                ⌚ Within last 24 hrs.
               </p>
             </div>
 
@@ -144,9 +146,6 @@ export default function Home() {
                 </div>
                 <Edit3 size={40} className="text-purple-500 opacity-20" />
               </div>
-              <p className="text-xs text-gray-500 mt-4">
-                ✓ All records current
-              </p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6 border-t-4 border-green-500">

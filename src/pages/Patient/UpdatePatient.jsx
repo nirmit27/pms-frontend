@@ -1,32 +1,48 @@
 import React, { useState } from "react";
 import { Edit3, Loader2 } from "lucide-react";
-import { api } from "../../services/api";
+
 import Header from "../../components/Header";
+import { fields } from "../../constants/constants";
+import { calculateBMI } from "../../utils/helpers";
+import { updatePatientRecord } from "../../services/api";
+import { useEffect } from "react";
 
 export default function UpdatePatient() {
   const [formData, setFormData] = useState({ pid: "" });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fields = [
-    { key: "pid", label: "Patient ID", type: "text" },
-    { key: "name", label: "Name", type: "text" },
-    { key: "email", label: "Email", type: "email" },
-    { key: "gender", label: "Gender", type: "text" },
-    { key: "age", label: "Age", type: "number" },
-    { key: "city", label: "City", type: "text" },
-    { key: "height", label: "Height (m)", type: "number", step: "0.01" },
-    { key: "weight", label: "Weight (kg)", type: "number", step: "0.1" },
-    { key: "bmi", label: "BMI", type: "number", step: "0.01" },
-  ];
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
+  // Unified handler for all field changes
+  const handleFieldChange = (key, value) => {
+    let updated = { ...formData, [key]: value };
+
+    if (key === "height" || key === "weight" || key === "bmi") {
+      const height = key === "height" ? value : updated.height;
+      const weight = key === "weight" ? value : updated.weight;
+      updated.bmi = calculateBMI(weight, height);
+    }
+    setFormData(updated);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
     try {
-      const res = await api.put("/update-patient", formData);
-      setMessage(res.data.message || "Patient updated successfully!");
+      const { bmi, ...dataToSend } = formData;
+      const res = await updatePatientRecord(dataToSend);
+
+      setMessage(res.message || "Patient updated successfully!");
       setFormData({ pid: "" });
     } catch (e) {
       setMessage(e.response?.data?.detail || "Error updating patient record!");
@@ -37,9 +53,7 @@ export default function UpdatePatient() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        title="Update Patient Record"
-      />
+      <Header title="Update Patient Record" />
 
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
@@ -53,7 +67,7 @@ export default function UpdatePatient() {
                   Update Patient Information
                 </h2>
                 <p className="text-gray-600 text-sm mt-1">
-                  Search by Patient ID and update the information
+                  Search by Patient ID and update the information.
                 </p>
               </div>
             </div>
@@ -76,21 +90,50 @@ export default function UpdatePatient() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fields.slice(1).map(({ key, label, type, step }) => (
+                {fields.map(({ key, label, type, step, options }) => (
                   <div key={key}>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       {label}
                     </label>
-                    <input
-                      type={type}
-                      step={step}
-                      value={formData[key] || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, [key]: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                      placeholder={`Enter ${label.toLowerCase()}`}
-                    />
+                    {type === "select" ? (
+                      <select
+                        value={formData[key] || ""}
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      >
+                        <option value="">Select {label.toLowerCase()}</option>
+                        {options?.map((option) => (
+                          <option key={option} value={option}>
+                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={type}
+                        step={step}
+                        value={formData[key] || ""}
+                        onChange={(e) => {
+                          handleFieldChange(key, e.target.value);
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        placeholder={
+                          label != "BMI"
+                            ? `Enter ${label.toLowerCase()}`
+                            : "Calculated BMI value..."
+                        }
+                        {...(key === "bmi"
+                          ? {
+                              readOnly: true,
+                              tabIndex: -1,
+                              style: {
+                                background: "#f3f4f6",
+                                cursor: "not-allowed",
+                              },
+                            }
+                          : {})}
+                      />
+                    )}
                   </div>
                 ))}
               </div>

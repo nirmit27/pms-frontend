@@ -13,6 +13,7 @@ import {
   fetchAllRecords,
   fetchRecordById,
   fetchRecordsByName,
+  fetchRecordsByNameFuzzy,
 } from "../../services/api";
 
 import Header from "../../components/Header";
@@ -32,6 +33,10 @@ export default function Records() {
   const [pid, setPid] = useState("");
   const [name, setName] = useState("");
   const [patients, setPatients] = useState([]);
+
+  // Fuzzy search suggestions
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Fetch all records
   useEffect(() => {
@@ -77,11 +82,40 @@ export default function Records() {
     }
   };
 
+  // Handle name input change with fuzzy search suggestions
+  const handleNameChange = async (e) => {
+    const value = e.target.value;
+    setName(value);
+
+    if (value.trim().length > 0) {
+      // Fetch fuzzy search suggestions
+      const suggestions = await fetchRecordsByNameFuzzy(value);
+      setSuggestions(suggestions.slice(0, 5)); // Limit to 5 suggestions
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSelectSuggestion = (patientName) => {
+    setName(patientName);
+    setShowSuggestions(false);
+    // Auto-trigger search
+    setTimeout(() => {
+      setLoadingName(true);
+      setSearched(true);
+      fetchRecordsByName(patientName)
+        .then(setResults)
+        .catch(() => setResults([]))
+        .finally(() => setLoadingName(false));
+    }, 0);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        title="Patient Records"
-      />
+      <Header title="Patient Records" />
 
       <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -224,27 +258,64 @@ export default function Records() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && fetchByName()}
-                    placeholder="Enter Patient Name"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    onClick={fetchByName}
-                    disabled={loadingName}
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 active:bg-green-700 disabled:opacity-50 flex items-center gap-2 font-medium focus:outline-none transition-colors cursor-pointer"
-                  >
-                    {loadingName ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Search className="w-4 h-4" />
-                    )}
-                    Search
-                  </button>
+                <div className="relative">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={handleNameChange}
+                      onKeyPress={(e) => e.key === "Enter" && fetchByName()}
+                      onFocus={() => name.trim() && setShowSuggestions(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowSuggestions(false), 200)
+                      }
+                      placeholder="Enter Patient Name (e.g., John, Jo, Joh...)"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      onClick={fetchByName}
+                      disabled={loadingName}
+                      className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 active:bg-green-700 disabled:opacity-50 flex items-center gap-2 font-medium focus:outline-none transition-colors cursor-pointer"
+                    >
+                      {loadingName ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Search className="w-4 h-4" />
+                      )}
+                      Search
+                    </button>
+                  </div>
+
+                  {/* Fuzzy Search Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                      {suggestions.map((patient) => (
+                        <button
+                          key={patient.pid}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(patient.name);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-green-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {patient.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {patient.pid} • {patient.city}
+                              </p>
+                            </div>
+                            <span className="text-xs text-gray-400">
+                              Click to select
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {searched && (
