@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Users, Plus, Edit3, FileText } from "lucide-react";
+import { Menu, X, Home, FileText, Plus, Edit3 } from "lucide-react";
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
-  const navItems = [
+  const navigationItems = [
     { path: "/", label: "Dashboard", icon: Home },
     { path: "/records", label: "Records", icon: FileText },
+  ];
+
+  const actionItems = [
     { path: "/add", label: "Admit Patient", icon: Plus },
-    { path: "/update", label: "Update Record", icon: Edit3 },
+    { path: "/update", label: "Edit Record", icon: Edit3 },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -47,26 +50,56 @@ export default function Sidebar() {
             </span>
             PMS
           </h1>
+          <p className="text-gray-600 text-xs mt-1">Patient Management</p>  
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-2">
-          {navItems.map(({ path, label, icon: Icon }) => (
-            <Link
-              key={path}
-              to={path}
-              onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                isActive(path)
-                  ? "bg-blue-500 text-white font-semibold shadow-md"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <Icon size={20} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
+        {/* Navigation Section */}
+        <div className="p-4">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+            Navigate
+          </p>
+          <nav className="space-y-1">
+            {navigationItems.map(({ path, label, icon: Icon }) => (
+              <Link
+                key={path}
+                to={path}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isActive(path)
+                    ? "bg-blue-500 text-white font-semibold shadow-md"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Icon size={20} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Actions Section */}
+        <div className="px-4 py-2">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+            Actions
+          </p>
+          <nav className="space-y-1">
+            {actionItems.map(({ path, label, icon: Icon }) => (
+              <Link
+                key={path}
+                to={path}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isActive(path)
+                    ? "bg-blue-500 text-white font-semibold shadow-md"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Icon size={20} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">

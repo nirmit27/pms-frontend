@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
+  X,
   Hash,
   User,
   Users,
   Search,
   Loader2,
+  RefreshCcw,
   AlertCircle,
-  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -37,6 +40,16 @@ export default function Records() {
   // Fuzzy search suggestions
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 3;
+
+  // Compute pagination
+  const totalPages = Math.ceil(patients.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedPatients = patients.slice(startIndex, endIndex);
 
   // Fetch all records
   useEffect(() => {
@@ -82,13 +95,41 @@ export default function Records() {
     }
   };
 
+  // NOTE: Refresh - for fetching latest records
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchAllRecords();
+
+      setPatients(data);
+      setCurrentPage(1); // NOTE: Reset pagination - back to 1st page
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Pagination handlers
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
+
   // Handle name input change with fuzzy search suggestions
   const handleNameChange = async (e) => {
     const value = e.target.value;
     setName(value);
 
     if (value.trim().length > 0) {
-      // Fetch fuzzy search suggestions
+      // NOTE: Fetch fuzzy search suggestions
       const suggestions = await fetchRecordsByNameFuzzy(value);
       setSuggestions(suggestions.slice(0, 5)); // Limit to 5 suggestions
       setShowSuggestions(true);
@@ -102,7 +143,8 @@ export default function Records() {
   const handleSelectSuggestion = (patientName) => {
     setName(patientName);
     setShowSuggestions(false);
-    // Auto-trigger search
+
+    // NOTE: Auto-trigger search
     setTimeout(() => {
       setLoadingName(true);
       setSearched(true);
@@ -386,79 +428,150 @@ export default function Records() {
                   </p>
                 </div>
               </div>
+              {/* Refresh button */}
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-colors"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCcw className="w-4 h-4" />
+                )}
+                Refresh
+              </button>
             </div>
-
             {loading ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
               </div>
             ) : (
-              <div className="space-y-3 max-h-[32rem] overflow-y-auto">
-                {patients.length > 0 ? (
-                  patients.map((patient) => (
-                    <div
-                      key={patient.pid}
-                      className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg hover:shadow-md transition-all border-l-2 border-purple-400 hover:border-purple-600"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-bold text-gray-800">
-                            {patient.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            ID: {patient.pid} • {patient.city}
-                          </p>
+              <>
+                <div className="space-y-3">
+                  {paginatedPatients.length > 0 ? (
+                    paginatedPatients.map((patient) => (
+                      <div
+                        key={patient.pid}
+                        className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg hover:shadow-md transition-all border-l-2 border-purple-400 hover:border-purple-600"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-bold text-gray-800">
+                              {patient.name}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              ID: {patient.pid} • {patient.city}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${getBMIColor(
+                              patient.verdict,
+                            )}`}
+                          >
+                            {patient.verdict}
+                          </span>
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${getBMIColor(
-                            patient.verdict,
-                          )}`}
-                        >
-                          {patient.verdict}
-                        </span>
-                      </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div className="bg-white p-2 rounded">
-                          <p className="text-gray-500 text-xs">Age</p>
-                          <p className="font-semibold text-gray-800">
-                            {patient.age}
-                          </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="bg-white p-2 rounded">
+                            <p className="text-gray-500 text-xs">Age</p>
+                            <p className="font-semibold text-gray-800">
+                              {patient.age}
+                            </p>
+                          </div>
+                          <div className="bg-white p-2 rounded">
+                            <p className="text-gray-500 text-xs">Gender</p>
+                            <p className="font-semibold text-gray-800">
+                              {patient.gender}
+                            </p>
+                          </div>
+                          <div className="bg-white p-2 rounded">
+                            <p className="text-gray-500 text-xs">BMI</p>
+                            <p className="font-semibold text-gray-800">
+                              {patient.bmi}
+                            </p>
+                          </div>
+                          <div className="bg-white p-2 rounded">
+                            <p className="text-gray-500 text-xs">
+                              Height/Weight
+                            </p>
+                            <p className="font-semibold text-gray-800">
+                              {patient.height}m / {patient.weight}kg
+                            </p>
+                          </div>
                         </div>
-                        <div className="bg-white p-2 rounded">
-                          <p className="text-gray-500 text-xs">Gender</p>
-                          <p className="font-semibold text-gray-800">
-                            {patient.gender}
-                          </p>
-                        </div>
-                        <div className="bg-white p-2 rounded">
-                          <p className="text-gray-500 text-xs">BMI</p>
-                          <p className="font-semibold text-gray-800">
-                            {patient.bmi}
-                          </p>
-                        </div>
-                        <div className="bg-white p-2 rounded">
-                          <p className="text-gray-500 text-xs">Height/Weight</p>
-                          <p className="font-semibold text-gray-800">
-                            {patient.height}m / {patient.weight}kg
-                          </p>
-                        </div>
-                      </div>
 
-                      {patient.date_of_admission && (
-                        <p className="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">
-                          Admitted: {formatDate(patient.date_of_admission)}
-                        </p>
-                      )}
+                        {patient.date_of_admission && (
+                          <p className="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">
+                            Admitted: {formatDate(patient.date_of_admission)}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Users className="w-12 h-12 opacity-30 mx-auto mb-3" />
+                      <p className="font-medium">No patient records found.</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <Users className="w-12 h-12 opacity-30 mx-auto mb-3" />
-                    <p className="font-medium">No patient records found.</p>
+                  )}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Showing{" "}
+                      <span className="font-semibold">{startIndex + 1}</span> to{" "}
+                      <span className="font-semibold">
+                        {Math.min(endIndex, patients.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-semibold">{patients.length}</span>{" "}
+                      records
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handlePreviousPage}
+                        disabled={currentPage === 1}
+                        className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Previous page"
+                      >
+                        <ChevronLeft className="w-4 h-4 text-gray-600" />
+                      </button>
+
+                      <div className="flex gap-1">
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1,
+                        ).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageClick(page)}
+                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? "bg-purple-500 text-white"
+                                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages}
+                        className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Next page"
+                      >
+                        <ChevronRight className="w-4 h-4 text-gray-600" />
+                      </button>
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

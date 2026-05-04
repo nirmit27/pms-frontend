@@ -65,7 +65,13 @@ export const updatePatientRecord = async (updatedData) => {
 // Discharge patient
 export const dischargePatient = async (pid) => {
   if (!pid.trim()) throw new Error("Patient ID is required");
+
   const res = await api.delete(`/discharge/${pid}`);
   return res.data;
 };
-  
+
+// Fetch recent activities
+export const fetchRecentActivities = async (limit = 10) => {
+  const res = await api.get(`/activities/recent?limit=${limit}`);
+  return res.data.activities || [];
+};
