@@ -1,11 +1,47 @@
-import React from "react";
-import { X, Copy, Mail, MapPin, Ruler, Weight, Calendar } from "lucide-react";
+import React, { useState } from "react";
+import {
+  X,
+  Mail,
+  Copy,
+  Ruler,
+  MapPin,
+  Weight,
+  Calendar,
+} from "lucide-react";
 
-export default function PatientModal({ patient, isOpen, onClose }) {
+export default function PatientModal({
+  patient,
+  isOpen,
+  onClose,
+  onDischarge,
+}) {
+  const [discharging, setDischarging] = useState(false);
+
   if (!isOpen || !patient) return null;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleDischarge = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to discharge patient ${patient.name} (ID: ${patient.pid})? This action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setDischarging(true);
+    try {
+      await onDischarge(patient.pid);
+      onClose();
+    } catch (error) {
+      console.error("Error discharging patient:", error);
+      alert("Failed to discharge patient. Please try again.");
+    } finally {
+      setDischarging(false);
+    }
   };
 
   const formatDate = (dateStr) => {
@@ -180,7 +216,7 @@ export default function PatientModal({ patient, isOpen, onClose }) {
 
               {/* BMI Status */}
               {patient.verdict && (
-                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                <div className="bg-blue-50 p-4 rounded-lg border-l-3 border-blue-500">
                   <p className="text-gray-600 text-xs font-semibold mb-2">
                     BMI Status
                   </p>
@@ -206,20 +242,20 @@ export default function PatientModal({ patient, isOpen, onClose }) {
                   <Calendar size={16} /> Important Dates
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {patient.date_of_admission && (
+                  {/* {patient.date_of_admission && ( */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <p className="text-gray-600 text-xs font-semibold mb-1">
                         Date of Admission
                       </p>
                       <p className="text-gray-800 font-semibold">
-                        {formatDate(patient.date_of_admission)}
+                {formatDate(patient.date_of_admission)}
                       </p>
                       <p className="text-gray-500 text-xs">
                         {formatTime(patient.date_of_admission)}
                       </p>
                     </div>
-                  )}
-                  {patient.date_of_discharge && (
+                  {/* )} */}
+                  {/* {patient.date_of_discharge && ( */}
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <p className="text-gray-600 text-xs font-semibold mb-1">
                         Date of Discharge
@@ -228,10 +264,27 @@ export default function PatientModal({ patient, isOpen, onClose }) {
                         {formatDate(patient.date_of_discharge)}
                       </p>
                     </div>
-                  )}
+                  {/* )} */}
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium cursor-pointer"
+            >
+              Close
+            </button>
+            <button
+              onClick={handleDischarge}
+              disabled={discharging}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {discharging ? "Discharging..." : "Discharge Patient"}
+            </button>
           </div>
         </div>
       </div>

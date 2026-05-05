@@ -17,6 +17,7 @@ import {
   fetchRecentAdmissionsCount,
   fetchRecentActivities,
   fetchRecordById,
+  dischargePatient,
 } from "../services/api";
 
 export default function Home() {
@@ -55,7 +56,7 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Fetch activities with polling (refresh every 5 seconds)
+  // Fetch activities with polling (every 5 seconds)
   useEffect(() => {
     const fetchActivities = async () => {
       try {
@@ -82,7 +83,30 @@ export default function Home() {
     }
   };
 
-  // Format timestamp to relative time (e.g., "2 hours ago")
+  // Handle patient discharge
+  const handleDischargePatient = async (pid) => {
+    try {
+      await dischargePatient(pid);
+      // Refresh dashboard data after discharge
+      const patients = await fetchAllRecords();
+      const recentAdmissionsCount = await fetchRecentAdmissionsCount();
+      const recent = patients.slice(-5).reverse();
+
+      setStats({
+        totalPatients: patients.length,
+        recentAdmissions: recentAdmissionsCount,
+        recentPatients: recent,
+        loading: false,
+      });
+
+      alert("Patient discharged successfully");
+    } catch (error) {
+      console.error("Error discharging patient:", error);
+      throw error;
+    }
+  };
+
+  // Format timestamp to relative time
   const formatTimeAgo = (timestamp) => {
     try {
       const now = new Date();
@@ -399,6 +423,7 @@ export default function Home() {
           setModalOpen(false);
           setSelectedPatient(null);
         }}
+        onDischarge={handleDischargePatient}
       />
     </div>
   );
